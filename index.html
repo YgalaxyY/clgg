@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cardora AI — Генератор лицензий</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0F0F23;
+      --card: #171730;
+      --accent: #8B5CF6;
+      --accent2: #EC4899;
+      --text: #E5E7EB;
+      --muted: #9CA3AF;
+    }
+
+    * { box-sizing: border-box; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(1200px 600px at 10% -10%, #1f1f4a, transparent),
+                  radial-gradient(800px 400px at 90% 10%, #3b0764, transparent),
+                  var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)) , var(--card);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      margin: 0 0 20px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #0b0b1a;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(139,92,246,0.25);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      box-shadow: 0 10px 30px rgba(139,92,246,0.35);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 40px rgba(139,92,246,0.45);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      display: none;
+    }
+
+    .key {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .hwid {
+      font-size: 13px;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Cardora AI</h1>
+    <p>Онлайн‑генератор лицензионных ключей</p>
+
+    <label for="hwid">Hardware ID клиента</label>
+    <input id="hwid" placeholder="Введите HWID" />
+
+    <button onclick="generate()">Сгенерировать ключ</button>
+
+    <div id="result" class="result">
+      <div class="key" id="licenseKey"></div>
+      <div class="hwid" id="hwidOut"></div>
+    </div>
+
+    <div class="footer">
+      © Cardora AI · License Tool
+    </div>
+  </div>
+
+  <script>
+    const SALT = "CARDORA_SECRET_2025";
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+    }
+
+    async function generate() {
+      const hwid = document.getElementById("hwid").value.trim();
+      if (!hwid) return;
+
+      const raw = await sha256(hwid + SALT);
+      const key = `${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
+
+      document.getElementById("licenseKey").textContent = key;
+      document.getElementById("hwidOut").textContent = "HWID: " + hwid;
+      document.getElementById("result").style.display = "block";
+    }
+  </script>
+</body>
+</html>
